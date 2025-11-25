@@ -1,4 +1,3 @@
-
 ## Task 1:
 
 ## Question 1: Describe your implementation approach and the key decisions you made.
@@ -64,3 +63,68 @@ Integrate Serilog/Elastic/OpenTelemetry to track validation errors, conflicts, a
 Ensure only authorized users can access or modify messages in a specific organization.
 8. Improve response shaping
 Return standardized API error formats (e.g., { code, message, details }) to provide a consistent client experience.
+
+
+
+
+
+## Task 3
+
+## Question 5: Explain your testing strategy and the tools you chose
+
+For this task, I followed a layered unit testing strategy focused on isolating business logic from infrastructure.
+The goal was to validate all rules inside MessageLogic without involving controllers, HTTP pipeline, or database code.
+
+Testing Strategy
+Unit Tests for Business Logic:
+I isolated the MessageLogic class and verified each rule independently, including validation, uniqueness checks, and active/inactive state rules.
+
+Mocking the Repository Layer:
+By mocking IMessageRepository, I simulated different data scenarios (existing title, missing message, inactive record) without needing a real database.
+
+Behavior Verification:
+Ensured that each method returns the correct Result type (Created, Conflict, ValidationError, NotFound) for expected inputs.
+
+Tools Used
+
+xUnit → Chosen as the primary test framework for .NET because it's simple, modern, and widely used.
+
+Moq → Used to mock IMessageRepository and fully isolate business logic from external dependencies.
+
+FluentAssertions → Provides clear, human-readable assertions (e.g., result.Should().BeOfType<Conflict>()), improving readability and debugging.
+
+
+
+## Question 6: What other scenarios would you test in a real-world application?
+
+In a real production environment, I would expand the testing to cover more complex and edge-case behaviors:
+
+Additional Real-World Scenarios
+
+Boundary Value Tests:
+Validate title/content at exact limits (3, 200, 10, 1000 characters).
+
+Concurrency & Race Conditions:
+Test simultaneous message creation with identical titles to ensure DB-level unique constraints hold under load.
+
+Optimistic Concurrency Tests:
+Use UpdatedAt/RowVersion fields to ensure updates do not overwrite changes made by another user.
+
+Integration Tests with In-Memory or Test Database:
+Validate full repository behavior, database constraints, migrations, and error handling.
+
+Authorization / Multi-Tenant Tests:
+Ensure cross-organization isolation so one org cannot access another org’s messages.
+
+Negative Tests for Infrastructure Failures:
+Simulate repository exceptions (DB down, timeout) to ensure proper error handling and logging.
+
+Controller-level Tests:
+Verify correct mapping from Result types to HTTP status codes (200, 201, 204, 400, 404, 409).
+
+
+
+
+
+
+
